@@ -1,0 +1,45 @@
+{
+  "name": "tip-top",
+  "version": "0.1.0",
+  "description": "Tip top is yet another react tooltip library. This one is built to be robust and customizable.",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "author": "Ben Lorantfy",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "start-storybook -p 6006",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "rollup -c",
+    "build-storybook": "build-storybook"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0-beta.42",
+    "@babel/preset-env": "^7.0.0-beta.42",
+    "@babel/preset-react": "^7.0.0-beta.42",
+    "@babel/preset-stage-0": "^7.0.0-beta.42",
+    "@storybook/addon-actions": "^3.3.15",
+    "@storybook/addon-links": "^3.3.15",
+    "@storybook/react": "^3.3.15",
+    "babel-core": "^7.0.0-0",
+    "babel-jest": "^22.4.3",
+    "babel-loader": "^7.1.4",
+    "babel-polyfill": "^6.26.0",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
+    "enzyme-to-json": "^3.3.3",
+    "jest": "^22.4.3",
+    "jest-styled-components": "^5.0.0",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^4.0.0-beta.2",
+    "webpack": "^4.2.0"
+  },
+  "dependencies": {
+    "raf": "^3.4.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-measure": "^3.0.0-rc.3",
+    "styled-components": "^3.2.3"
+  }
+}
