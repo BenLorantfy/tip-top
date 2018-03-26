@@ -1,3 +1,6 @@
+export const measureNode = (node) => node.getBoundingClientRect();
+export const measureViewport = () => ({ width: window.innerWidth, height: window.innerHeight });
+
 export const calculateTooltipBBox = ({ 
   placement, 
   contentWidth, 

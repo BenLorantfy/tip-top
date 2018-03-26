@@ -13,9 +13,9 @@ import { storiesOf } from '@storybook/react';
 //   .add('with text', () => <Button onClick={action('clicked')}>Hello Button</Button>)
 //   .add('with some emoji', () => <Button onClick={action('clicked')}>😀 😎 👍 💯</Button>);
 
-storiesOf('Tooltip', module).add('default', () => 
+storiesOf('Tooltip', module).add('open', () => 
   <div style={{ backgroundColor: 'green', padding: '50px', width: '2000px' }}>
-    <Tooltip content="Don't click this!!">
+    <Tooltip content="Don't click this!!" open>
       <span style={{ backgroundColor: 'blue' }}>sdflmk</span>
     </Tooltip>
   </div>

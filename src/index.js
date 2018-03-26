@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom';
-import { Measure, Viewport } from 'react-measure'
 import Tooltip from './Tooltip';
 import raf from 'raf';
+import { measureNode, measureViewport } from './utils';
 
 /**
  * @name Wrapper
@@ -13,12 +13,9 @@ import raf from 'raf';
  * of both the trigger and the tooltip to the tooltip, which is used to position the tooltip
  * as well as make sure the tooltip is on screen.
  */
-const observer = new IntersectionObserver((entries) => { 
-  console.log('yolo');
-  entries.forEach(entry => console.log(entry.target, entry. intersectionRatio));
-}); 
-
 class Wrapper extends React.Component {
+  state = {}
+
   /**
    * Uses requestAnimationFrame to do our measuring every frame. Here's a litte
    * reasoning of why we decided this method. 
@@ -40,13 +37,54 @@ class Wrapper extends React.Component {
    * only be for a couple seconds.
    */
   componentDidMount() {
-    const tick = () => {
-      const rect = this.triggerRef.getBoundingClientRect();
-      console.log(rect.left);
-      raf(tick);
+    if (this.props.open) {
+      this.startMeasuring();
+    }
+  }
+
+  componentWillUnmount() {
+    this.stopMeasuring();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.props.open && nextProps.open) {
+      this.startMeasuring();
     }
 
-    raf(tick);
+    if (this.props.open && !nextProps.open) {
+      this.stopMeasuring();
+    }
+  }
+
+  startMeasuring() {
+    this.stopMeasuring();
+
+    const tick = () => {
+      const triggerRect = measureNode(this.triggerRef);
+      const contentRect = measureNode(this.contentRef);
+      const viewport = measureViewport();
+
+      this.setState({
+        contentWidth: contentRect.width,
+        contentHeight: contentRect.height,
+        triggerX: triggerRect.left,
+        triggerY: triggerRect.top,
+        triggerWidth: triggerRect.width,
+        triggerHeight: triggerRect.height,
+        viewportWidth: viewport.width,
+        viewportHeight: viewport.height
+      });
+      
+      this.rafHandle = raf(tick);
+    }
+
+    this.rafHandle = raf(tick);
+  }
+
+  stopMeasuring() {
+    if (this.rafHandle) {
+      raf.cancel(this.rafHandle);
+    }
   }
 
   render() {
@@ -57,158 +95,32 @@ class Wrapper extends React.Component {
           * render something in the body instead of as a child of the parent
           * of this component. https://reactjs.org/docs/portals.html
           */}
-        {/*ReactDOM.createPortal(
-          <Viewport>
-            {(viewport) => (
-              <Tooltip 
-                innerRef={bind('content').ref}
-                contentWidth={measurements && measurements.content.width}
-                contentHeight={measurements && measurements.content.height}
-                triggerX={measurements && measurements.trigger.left}
-                triggerY={measurements && measurements.trigger.top}
-                triggerWidth={measurements && measurements.trigger.width}
-                triggerHeight={measurements && measurements.trigger.height}
-                viewportWidth={viewport.width}
-                viewportHeight={viewport.height}
-              >
-                {this.props.content}
-              </Tooltip>
-            )}
-          </Viewport>
-          ,window.document.body)*/}
+        {ReactDOM.createPortal(
+          <Tooltip 
+            innerRef={ref => this.contentRef = ref}
+            contentWidth={this.state.contentWidth}
+            contentHeight={this.state.contentHeight}
+            triggerX={this.state.triggerX}
+            triggerY={this.state.triggerY}
+            triggerWidth={this.state.triggerWidth}
+            triggerHeight={this.state.triggerHeight}
+            viewportWidth={this.state.viewportWidth}
+            viewportHeight={this.state.viewportHeight}
+          >
+            {this.props.content}
+          </Tooltip>
+          ,window.document.body)}
 
         {/**
           * We need to render the children passed to the wrapper, but we need to wrap
-          * it in a div so we measure it.
-          * 
-          * It's important here that we use display: inline-block. This is because we
-          * need to use either block or inline-block, because the ReactObserver spec
-          * doesn't support display inline. We also don't want to screw with the user's
-          * formatting, so we don't want block.
-          * https://wicg.github.io/ResizeObserver/#intro
+          * it in a div so we can measure it.
           */}
           <div style={{ display: 'inline-block' }} ref={ref => this.triggerRef = ref}>
             {this.props.children}
           </div>
-        {/*<div style={{ display: 'inline-block' }} {...bind('trigger')}>
-          {this.props.children}
-        </div>*/}
       </div>
     );
   }
-  // render() {
-  //   return (
-  //     <Measure>
-  //       {({ bind, measurements }) => {
-  //         // console.log('measurements', measurements);
-  //         return (
-  //           <div>
-  //             {/**
-  //               * Creates a react portal for the tooltip. A portal lets us
-  //               * render something in the body instead of as a child of the parent
-  //               * of this component. https://reactjs.org/docs/portals.html
-  //               */}
-  //             {/*ReactDOM.createPortal(
-  //               <Viewport>
-  //                 {(viewport) => (
-  //                   <Tooltip 
-  //                     innerRef={bind('content').ref}
-  //                     contentWidth={measurements && measurements.content.width}
-  //                     contentHeight={measurements && measurements.content.height}
-  //                     triggerX={measurements && measurements.trigger.left}
-  //                     triggerY={measurements && measurements.trigger.top}
-  //                     triggerWidth={measurements && measurements.trigger.width}
-  //                     triggerHeight={measurements && measurements.trigger.height}
-  //                     viewportWidth={viewport.width}
-  //                     viewportHeight={viewport.height}
-  //                   >
-  //                     {this.props.content}
-  //                   </Tooltip>
-  //                 )}
-  //               </Viewport>
-  //               ,window.document.body)*/}
-
-  //             {/**
-  //               * We need to render the children passed to the wrapper, but we need to wrap
-  //               * it in a div so we measure it.
-  //               * 
-  //               * It's important here that we use display: inline-block. This is because we
-  //               * need to use either block or inline-block, because the ReactObserver spec
-  //               * doesn't support display inline. We also don't want to screw with the user's
-  //               * formatting, so we don't want block.
-  //               * https://wicg.github.io/ResizeObserver/#intro
-  //               */}
-  //               <div style={{ display: 'inline-block' }} ref={(node) => observer.observe(node)}>
-  //                 {this.props.children}
-  //               </div>
-  //             {/*<div style={{ display: 'inline-block' }} {...bind('trigger')}>
-  //               {this.props.children}
-  //             </div>*/}
-  //           </div>
-  //         );
-  //       }}
-  //     </Measure>
-  //   );
-  // }
 }
 
-
 export default Wrapper;
-
-// import React from 'react';
-// import { createPortal } from 'react-dom';
-// import { Measure, Viewport } from 'react-measure';
-// import styled from 'styled-components';
-// import Tooltip from './Tooltip';
-
-// const Bla = styled.div``;
-
-// class Wrapper extends React.PureComponent {
-//   static displayName = 'TooltipWrapepr'
-//   state = {
-//     message: 'bb'
-//   }
-//   componentDidMount() {
-//     setInterval(() => {
-//       this.setState(state => ({ message: state.message + 'a' }))
-//     }, 1000);
-//   }
-//   render() {
-//     return (
-//       <Measure onMeasure={(...args) => { console.log('onMeasure', ...args) }}>
-//         {({ bind, measurements }) => {
-//           console.log('render', measurements && measurements.trigger.width);
-//           return (
-//             <div>
-
-//               <Bla innerRef={bind('trigger').ref}>
-//                 {this.state.message}
-//                 {/* this.props.children */}
-//               </Bla>
-//             </div>
-//           )
-//         }}
-//       </Measure>
-//     )
-//   }
-// }
-//               // {createPortal(
-//               //   // <Viewport>
-//               //     // {(viewport) => (
-//               //       <Tooltip 
-//               //         innerRef={bind('content').ref}
-//               //         contentWidth={measurements && measurements.content.width}
-//               //         contentHeight={measurements && measurements.content.height}
-//               //         triggerX={measurements && measurements.trigger.left}
-//               //         triggerY={measurements && measurements.trigger.top}
-//               //         triggerWidth={measurements && measurements.trigger.width}
-//               //         triggerHeight={measurements && measurements.trigger.height}
-//               //         // viewportWidth={viewport.width}
-//               //         // viewportHeight={viewport.height}
-//               //       >
-//               //         {this.props.content}
-//               //       </Tooltip>
-//               //     // )}
-//               //   // </Viewport>
-//               // ,window.document.body)}
-// export default Wrapper;

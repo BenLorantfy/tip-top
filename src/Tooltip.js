@@ -27,8 +27,6 @@ class Tooltip extends React.PureComponent {
     });
 
     this.setState({ bbox });
-    console.log('nextProps', nextProps);
-    console.log('bbox', bbox);
   }
   
   render() {
